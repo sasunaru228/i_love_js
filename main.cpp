@@ -197,6 +197,7 @@ public:
         if (count == 1) {
             value = mass[0];
             mass = nullptr;
+            count = 0;
             return value;
         }
 
@@ -248,6 +249,7 @@ string postFix(string value){
             continue;
         }
         else if (value[i] == '+' || value[i] == '-' || value[i] == '*' || value[i] == '/'){
+            queue.pushFirst(' ');
             if (stack.getSize() == 0 || stack.last() == '('){
                 stack.push(value[i]);
             }
@@ -255,24 +257,43 @@ string postFix(string value){
                 stack.push(value[i]);
             }
             else {
-                while(stack.getSize() != 0 ){
-                    if (stack.last() == '(' || ((stack.last() == '*' || stack.last() == '/') && (value[i] == '+' || value[i] == '-')) ){//доделать
-                        stack.push(value[i]);
-                        break;
-                    }
+                while(stack.getSize() != 0 && (stack.last() == '(' || ((stack.last() == '*' || stack.last() == '/') && (value[i] == '+' || value[i] == '-')))){
                     queue.pushFirst(stack.pop());
-
+                    queue.pushFirst(' ');
                 }
+                stack.push(value[i]);
             }
+        }
+        else if (value[i] == '('){
+            stack.push(value[i]);
+        }
+        else if (value[i] == ')'){
+            while (stack.last() != '('){
+                queue.pushFirst(stack.pop());
+            }
+            stack.pop();
         }
 
     }
-
+//    List result;
+//    while (!queue.isEmpty()){
+//        result.pushLast(queue.removeLast());
+//    }
+//    while (stack.getSize() != 0){
+//        result.pushLast(stack.pop());
+//    }
+//    cout << "______________________" << endl;
+//    result.show();
+//    cout << "______________________";
+    value = "";
     while (!queue.isEmpty()){
-        char newChar = queue.removeFirst();
+        char newChar = queue.removeLast();
         value = value + newChar;
     }
-
+    while (stack.getSize() != 0){
+        char newOpr = stack.pop();
+        value = value + " " + newOpr;
+    }
     return value;
 }
 
@@ -314,7 +335,8 @@ int main() {
     cout << obj2.getSize() << endl;
     cout << obj2[0] -> value << endl;
 
-    string primer = "3+4";
+    cout << "----------------------------" << endl;
+    string primer = "5*66+(21-9)";
     cout << postFix(primer);
     return 0;
 
