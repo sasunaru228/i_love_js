@@ -75,7 +75,9 @@ public:
             return removeFirst();
         }
         Node* param = first;
-        while (param -> next != last) param = param -> next;
+        while (param -> next != last) {
+            param = param -> next;
+        }
         param -> next = nullptr;
         int xxx = last -> value;
         delete last;
@@ -257,10 +259,10 @@ string postFix(string value){
                 stack.push(value[i]);
             }
             else {
-                while(stack.getSize() != 0 && (stack.last() == '(' || ((stack.last() == '*' || stack.last() == '/') && (value[i] == '+' || value[i] == '-')))){
+                do {
                     queue.pushFirst(stack.pop());
-                    queue.pushFirst(' ');
                 }
+                while(stack.getSize() != 0 && (stack.last() == '(' || ((stack.last() == '*' || stack.last() == '/') && (value[i] == '+' || value[i] == '-'))));
                 stack.push(value[i]);
             }
         }
@@ -275,16 +277,7 @@ string postFix(string value){
         }
 
     }
-//    List result;
-//    while (!queue.isEmpty()){
-//        result.pushLast(queue.removeLast());
-//    }
-//    while (stack.getSize() != 0){
-//        result.pushLast(stack.pop());
-//    }
-//    cout << "______________________" << endl;
-//    result.show();
-//    cout << "______________________";
+
     value = "";
     while (!queue.isEmpty()){
         char newChar = queue.removeLast();
@@ -294,50 +287,65 @@ string postFix(string value){
         char newOpr = stack.pop();
         value = value + " " + newOpr;
     }
+    // костыль
+    for (int k = 0; k < value.length(); k++){
+        if (((value[k] >= '0' && value[k] <= '9') && (value[k+1] == '+' || value[k+1] == '-' || value[k+1] == '*' || value[k+1] == '/' )) || ((value[k] == '+' || value[k] == '-' || value[k] == '*' || value[k] == '/' ) && (value[k+1] >= '0' && value[k+1] <= '9'))){
+            value.insert(k+1, " ");
+            k++;
+            continue;
+        }
+    }
+    // конец костыля
     return value;
 }
 
+int postFixtoResult(string str){
+    Stack stack;
+    for (int i = 0; i < str.length(); i++){
+        if (str[i] >= '0' && str[i] <= '9'){
+            int j = i;
+            int num = 0;
+            string result = "";
+            do {
+                result = result + str[j];
+                j++;
+            }
+            while (str[j] != ' ');
+            for (int k = 0; k < result.length(); k++){
+                num = num + (int(result[k] - '0') * pow(10, result.length() - 1));
+            }
+            if (num != 0) stack.push(num);
+        }
+        if (str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '/'){
+            if (str[i] == '+'){
+                int res = stack.pop();
+                stack.push(stack.pop() + res);
+            }
+            if (str[i] == '-'){
+                int res = stack.pop();
+                stack.push(stack.pop() - res);
+            }
+            if (str[i] == '*'){
+                int res = stack.pop();
+                int res1 = stack.pop();
+                int result = res1 * res;
+                stack.push(result);
+            }
+            if (str[i] == '/'){
+                int res = stack.pop();
+                stack.push(stack.pop() / res);
+            }
+        }
+    }
+    return stack.getNumber(0);
+}
 
 
 int main() {
-    Stack obj;
-    obj.push(1);
-    obj.push(2);
-    obj.push(20);
-    obj.push(25);
-    cout << obj.getNumber(3) << "\n";
-    obj.show();
-    obj.pop();
-    obj.show();
-    cout << obj.getSize() << endl;
-    cout << obj.getNumber(3) << "\n";
-    cout << "last - " << obj.last() << endl;
-
-    List obj2;
-    obj2.pushLast(5);
-    obj2.pushLast(10);
-    obj2.pushLast(20);
-    obj2.pushLast(99999);
-    obj2.pushLast(35);
-    obj2.pushLast(99);
-    obj2.pushLast(228);
-    obj2.pushLast(322);
-    obj2.show();
-    obj2.removeFirst();
-    obj2.pushFirst(26);
-    obj2.pushFirst(10);
-    obj2.pushFirst(2000);
-    obj2.show();
-    obj2.removeId(2);
-    obj2.show();
-    obj2.insertInto(43, 26102000);
-    obj2.show();
-    cout << obj2.getSize() << endl;
-    cout << obj2[0] -> value << endl;
-
-    cout << "----------------------------" << endl;
-    string primer = "5*66+(21-9)";
-    cout << postFix(primer);
+    string primer = "3+4";
+    cout << "Входящая строка - " << primer << endl;
+    cout << postFix(primer) << endl;
+    cout << "result - " << postFixtoResult(postFix(primer));
     return 0;
 
 
